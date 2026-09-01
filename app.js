@@ -91,8 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadNotes();
   }
 
-  // Event listener pada tombol simpan
-  saveBtn.addEventListener('click', saveNode);
+  // Event listener pada tombol simpan (dikoreksi dari saveNode menjadi saveNote)
+  saveBtn.addEventListener('click', saveNote);
 
   // Panggil fungsi loadNotes saat pertama kali aplikasi dibuka
   loadNotes();

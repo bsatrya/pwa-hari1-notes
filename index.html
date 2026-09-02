@@ -4,14 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catatan Pintar PWA - Hari 1</title>
-  
-  <!-- Menghubungkan file manifest PWA -->
   <link rel="manifest" href="manifest.json">
-  
-  <!-- Meta tag warna tema untuk bar status browser seluler -->
   <meta name="theme-color" content="#2563eb">
-  
-  <!-- Menghubungkan stylesheet eksternal -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,19 +13,15 @@
   <div class="container">
     <h1>📝 Catatan Pintar Harian</h1>
     
-    <!-- Form input catatan baru -->
     <div class="form-group">
       <textarea id="noteInput" placeholder="Tulis catatan baru di sini..."></textarea>
-      <button id="saveBtn">Simpan Catatan</button>
+      <button id="saveBtn" type="button">Simpan Catatan</button>
     </div>
 
-    <!-- Area daftar catatan yang tersimpan (WAJIB ADA AGAR TIDAK ERROR) -->
-    <div class="notes-list" id="notesList">
-      <!-- Catatan akan dirender secara dinamis via JavaScript -->
-    </div>
+    <!-- Area daftar catatan -->
+    <div class="notes-list" id="notesList"></div>
   </div>
 
-  <!-- Menghubungkan skrip logika aplikasi -->
   <script src="app.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // Nama cache unik beserta versinya untuk manajemen cache
-const CACHE_NAME = 'catatan-pwa-v1';
+const CACHE_NAME = 'catatan-pwa-v2';
 
 // Daftar aset inti yang wajib disimpan di cache saat instalasi
 const ASSETS_TO_CACHE = [
@@ -8,6 +8,8 @@ const ASSETS_TO_CACHE = [
   '/style.css',
   '/app.js',
   '/manifest.json'
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 // Event listener saat Service Worker pertama kali diinstal oleh browser

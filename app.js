@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Aplikasi PWA Hari 2 Berhasil Dimuat');
+  console.log('Aplikasi PWA Hari 3 Berhasil Dimuat');
 
   const noteInput = document.getElementById('noteInput');
   const saveBtn = document.getElementById('saveBtn');
@@ -7,73 +7,87 @@ document.addEventListener('DOMContentLoaded', () => {
   const geoStatus = document.getElementById('geoStatus');
   const notesList = document.getElementById('notesList');
 
-  // Variabel untuk menyimpan data koordinat sementara sebelum disimpan
   let currentCoords = null;
+  let map = null;
+  let marker = null;
 
-  // --- 1. REGISTRASI SERVICE WORKER (Diperbarui ke v2/v3) ---
+  // --- 1. INISIALISASI PETA LEAFLET ---
+  // Default koordinat awal (misal: pusat kota Malang, Indonesia)
+  const defaultLat = -7.9666;
+  const defaultLng = 112.6326;
+
+  function initMap(lat = defaultLat, lng = defaultLng) {
+    if (!map) {
+      // Inisialisasi peta pada elemen dengan id="map"
+      map = L.map('map').setView([lat, lng], 13);
+
+      // Memuat layer tile peta gratis dari OpenStreetMap
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+    } else {
+      map.setView([lat, lng], 15);
+    }
+
+    // Tambahkan atau pindahkan marker posisi
+    if (marker) {
+      marker.setLatLng([lat, lng]);
+    } else {
+      marker = L.marker([lat, lng]).addTo(map);
+    }
+  }
+
+  // Panggil peta saat pertama kali halaman dimuat
+  initMap();
+
+  // --- 2. REGISTRASI SERVICE WORKER ---
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
+      navigator.geolocation // sekadar pengaman baris
       navigator.serviceWorker.register('/sw.js')
         .then((reg) => console.log('SW terdaftar:', reg.scope))
         .catch((err) => console.error('SW gagal:', err));
     });
   }
 
-  // --- 2. FITUR GEOLOKASI ---
+  // --- 3. GEOLOKASI & PEMBARUAN PETA ---
   geoBtn.addEventListener('click', () => {
-    // Memeriksa apakah browser mendukung Geolocation API
     if (!navigator.geolocation) {
-      geoStatus.textContent = 'Geolokasi tidak didukung oleh browser Anda.';
+      geoStatus.textContent = 'Geolokasi tidak didukung oleh browser.';
       return;
     }
 
-    geoStatus.textContent = 'Mendeteksi posisi perangkat...';
+    geoStatus.textContent = 'Mendeteksi posisi satelit GPS...';
 
-    // Mengambil posisi satu kali menggunakan getCurrentPosition
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
         
-        // Simpan ke variabel lokal
         currentCoords = { lat: latitude, lng: longitude };
         
-        geoStatus.textContent = `Lokasi didapat: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-        console.log('Koordinat berhasil diambil:', currentCoords);
+        geoStatus.textContent = `Lokasi: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+        
+        // Perbarui tampilan peta dan letakkan marker di posisi pengguna
+        initMap(latitude, longitude);
+        marker.bindPopup("<b>Posisi Anda Saat Ini</b>").openPopup();
       },
       (error) => {
-        console.error('Gagal mendeteksi lokasi:', error);
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            geoStatus.textContent = 'Izin akses lokasi ditolak oleh pengguna.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            geoStatus.textContent = 'Informasi lokasi tidak tersedia.';
-            break;
-          case error.TIMEOUT:
-            geoStatus.textContent = 'Waktu permintaan lokasi habis.';
-            break;
-          default:
-            geoStatus.textContent = 'Terjadi kesalahan yang tidak diketahui.';
-            break;
-        }
+        geoStatus.textContent = 'Gagal mendeteksi lokasi atau izin ditolak.';
+        console.error(error);
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   });
 
-  // --- 3. MANAJEMEN LOCALSTORAGE & RENDERING ---
+  // --- 4. MANAJEMEN LOCALSTORAGE & RENDERING ---
   function loadNotes() {
-    // Sekarang data catatan disimpan dalam bentuk objek (teks + koordinat)
-    const notes = JSON.parse(localStorage.getItem('my_notes_geo')) || [];
+    const notes = JSON.parse(localStorage.getItem('my_notes_map')) || [];
     notesList.innerHTML = '';
 
     if (notes.length === 0) {
-      notesList.innerHTML = '<p style="text-align: center; color: #64748b; margin-top: 15px;">Belum ada catatan geolokasi tersimpan.</p>';
+      notesList.innerHTML = '<p style="text-align: center; color: #64748b; margin-top: 15px;">Belum ada catatan peta tersimpan.</p>';
       return;
     }
 
@@ -87,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
       textSpan.textContent = note.text;
       contentDiv.appendChild(textSpan);
 
-      // Jika catatan memiliki data koordinat, tampilkan sebagai metadata
       if (note.coords) {
         const metaSpan = document.createElement('small');
         metaSpan.className = 'note-meta';
@@ -114,18 +127,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Buat objek catatan yang merangkap teks dan koordinat geolokasi (jika ada)
     const newNote = {
       text: text,
-      coords: currentCoords,
+      coords: currentCoords || { lat: defaultLat, lng: defaultLng },
       date: new Date().toISOString()
     };
 
-    const notes = JSON.parse(localStorage.getItem('my_notes_geo')) || [];
+    const notes = JSON.parse(localStorage.getItem('my_notes_map')) || [];
     notes.push(newNote);
-    localStorage.setItem('my_notes_geo', JSON.stringify(notes));
+    localStorage.setItem('my_notes_map', JSON.stringify(notes));
 
-    // Reset form dan variabel koordinat
     noteInput.value = '';
     currentCoords = null;
     geoStatus.textContent = 'Belum ada lokasi dipilih';
@@ -133,9 +144,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function deleteNote(index) {
-    const notes = JSON.parse(localStorage.getItem('my_notes_geo')) || [];
+    const notes = JSON.parse(localStorage.getItem('my_notes_map')) || [];
     notes.splice(index, 1);
-    localStorage.setItem('my_notes_geo', JSON.stringify(notes));
+    localStorage.setItem('my_notes_map', JSON.stringify(notes));
     loadNotes();
   }
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Lapangan & Info Warga - PWA Hari 5</title>
+  <title>Dashboard Lapangan & Info Warga - PWA</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1e3a8a">
@@ -16,31 +16,47 @@
 
   <div class="container">
     <h1>🚀 Latihan Dashboard Info Warga</h1>
-    <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 15px;">Sistem PWA Offline-First dengan GPS & IndexedDB</p>
+    <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 15px;">Sistem PWA Cloud-Synchronized dengan GPS & Firebase</p>
     
     <!-- Tombol Install A2HS -->
     <button id="installBtn" class="install-btn" style="display: none;">📲 Install Dashboard ke Perangkat</button>
 
-    <div class="form-group">
-      <input type="text" id="nameInput" placeholder="Nama Pengirim / Petugas..." class="input-field">
-      <input type="tel" id="phoneInput" placeholder="Nomor Telepon / WhatsApp..." class="input-field">
-      <textarea id="noteInput" placeholder="Tulis informasi kegiatan warga atau laporan lapangan..."></textarea>
-      
-      <div class="location-box">
-        <button type="button" id="geoBtn" class="geo-btn">Ambil Posisi GPS</button>
-        <span id="geoStatus" class="geo-status">Belum ada lokasi dipilih</span>
-      </div>
-
-      <div id="map" class="map-container"></div>
-
-      <button id="saveBtn" type="button" style="margin-top: 15px; background-color: #1e3a8a;">Publikasikan Informasi</button>
+    <!-- Tombol & Status GPS -->
+    <div style="margin-bottom: 15px;">
+      <button id="geoBtn" type="button" style="background-color: #0284c7; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 500;">Ambil Posisi GPS</button>
+      <span id="geoStatus" style="font-size: 0.85rem; color: #64748b; margin-left: 10px;">Belum ada lokasi dipilih</span>
     </div>
+
+    <!-- Peta Interaktif Leaflet -->
+    <div id="map" class="map-container" style="height: 300px; border-radius: 8px; margin-bottom: 15px;"></div>
+
+    <!-- Form Input Laporan -->
+    <div class="form-group">
+      <input type="text" id="nameInput" placeholder="Nama Pengirim..." required>
+    </div>
+
+    <div class="form-group">
+      <input type="email" id="emailInput" placeholder="Alamat Email..." required>
+    </div>
+
+    <div class="form-group">
+      <input type="text" id="locationNameInput" placeholder="Keterangan Lokasi (Cth: Jl. Joyo Tambaksari No. 10)">
+    </div>
+
+    <div class="form-group">
+      <textarea id="noteInput" placeholder="Tuliskan keluhan atau informasi warga..." rows="3" required></textarea>
+    </div>
+
+    <button id="saveBtn" type="button" style="margin-top: 15px; background-color: #1e3a8a; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer;">Publikasikan Informasi</button>
 
     <!-- Area daftar data -->
     <div class="notes-list" id="notesList"></div>
   </div>
 
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Script Utama dengan Dukungan Modul Firebase -->
   <script type="module" src="app.js"></script>
 </body>
 </html>

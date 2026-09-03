@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Konfigurasi Firebase dari Project Settings Anda
 const firebaseConfig = {
@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Aplikasi Forum Keluhan & Info Warga PWA (Firebase Cloud) Berhasil Dimuat');
 
   const nameInput = document.getElementById('nameInput');
-  const phoneInput = document.getElementById('phoneInput');
+  const emailInput = document.getElementById('emailInput'); // Diubah dari phoneInput
+  const locationNameInput = document.getElementById('locationNameInput'); // Kolom baru nama lokasi
   const noteInput = document.getElementById('noteInput');
   const saveBtn = document.getElementById('saveBtn');
   const geoBtn = document.getElementById('geoBtn');
@@ -135,7 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
     notesList.innerHTML = '';
     const q = query(collection(db, "reports"), orderBy("date", "desc"));
 
-    // onSnapshot untuk sinkronisasi data real-time antar perangkat
     onSnapshot(q, (querySnapshot) => {
       notesList.innerHTML = '';
 
@@ -171,10 +171,21 @@ document.addEventListener('DOMContentLoaded', () => {
           contentDiv.appendChild(timeSpan);
         }
 
+        // Tampilkan Nama & Email
         const contactSpan = document.createElement('span');
         contactSpan.className = 'contact-meta';
-        contactSpan.textContent = `👤 ${record.name} (${record.phone})`;
+        contactSpan.textContent = `👤 ${record.name} (${record.email})`;
         contentDiv.appendChild(contactSpan);
+
+        // Tampilkan Keterangan Nama Lokasi Text (jika diisi)
+        if (record.locationName) {
+          const locNameSpan = document.createElement('span');
+          locNameSpan.style.display = 'block';
+          locNameSpan.style.fontWeight = '500';
+          locNameSpan.style.color = '#334155';
+          locNameSpan.textContent = `📍 Area: ${record.locationName}`;
+          contentDiv.appendChild(locNameSpan);
+        }
 
         const textSpan = document.createElement('span');
         textSpan.textContent = record.note;
@@ -183,9 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (record.coords) {
           const metaSpan = document.createElement('small');
           metaSpan.className = 'note-meta clickable-coord';
-          metaSpan.textContent = `📍 Koordinat: ${record.coords.lat.toFixed(4)}, ${record.coords.lng.toFixed(4)}`;
+          metaSpan.textContent = `🗺️ Koordinat: ${record.coords.lat.toFixed(4)}, ${record.coords.lng.toFixed(4)}`;
           
-          // Fitur klik koordinat untuk mengarahkan peta ke titik laporan
           metaSpan.addEventListener('click', () => {
             if (map) {
               map.setView([record.coords.lat, record.coords.lng], 16);
@@ -194,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
               } else {
                 marker = L.marker([record.coords.lat, record.coords.lng]).addTo(map);
               }
-              marker.bindPopup(`<b>Lokasi Laporan:</b><br>${record.note}`).openPopup();
+              marker.bindPopup(`<b>${record.locationName || 'Lokasi Laporan'}</b><br>${record.note}`).openPopup();
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }
           });
@@ -219,12 +229,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- 6. MENYIMPAN DATA KE CLOUD FIRESTORE ---
   async function saveRecord() {
     const name = nameInput.value.trim();
-    const phone = phoneInput.value.trim();
+    const email = emailInput.value.trim();
+    const locationName = locationNameInput.value.trim();
     const note = noteInput.value.trim();
 
     let missingFields = [];
     if (name === '') missingFields.push('Nama Pengirim');
-    if (phone === '') missingFields.push('Nomor Telepon');
+    if (email === '') missingFields.push('Alamat Email');
     if (note === '') missingFields.push('Isi Informasi/Keluhan');
 
     if (missingFields.length > 0) {
@@ -234,7 +245,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const newRecord = {
       name: name,
-      phone: phone,
+      email: email,
+      locationName: locationName || 'Lokasi Peta Dipilih',
       note: note,
       coords: currentCoords || { lat: defaultLat, lng: defaultLng },
       date: new Date().toISOString()
@@ -245,7 +257,8 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('Informasi berhasil dipublikasikan ke Firebase Cloud');
       
       nameInput.value = '';
-      phoneInput.value = '';
+      emailInput.value = '';
+      locationNameInput.value = '';
       noteInput.value = '';
       currentCoords = null;
       geoStatus.textContent = 'Belum ada lokasi dipilih';

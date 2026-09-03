@@ -1,5 +1,23 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// Konfigurasi Firebase dari Project Settings Anda
+const firebaseConfig = {
+  apiKey: "AIzaSyBZ8UobDfYZG_90GWpWvPeIeReseXuEJA0",
+  authDomain: "forum-warga-test.firebaseapp.com",
+  projectId: "forum-warga-test",
+  storageBucket: "forum-warga-test.firebasestorage.app",
+  messagingSenderId: "605136480213",
+  appId: "1:605136480213:web:06bc16d4e5d4124b6bef5c",
+  measurementId: "G-T7HT1D1EK3"
+};
+
+// Inisialisasi Firebase & Firestore
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Aplikasi Forum Keluhan & Info Warga PWA Berhasil Dimuat');
+  console.log('Aplikasi Forum Keluhan & Info Warga PWA (Firebase Cloud) Berhasil Dimuat');
 
   const nameInput = document.getElementById('nameInput');
   const phoneInput = document.getElementById('phoneInput');
@@ -13,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentCoords = null;
   let map = null;
   let marker = null;
-  let db = null;
   let deferredPrompt = null;
 
   // Koordinat default (pusat kota Malang)
@@ -29,32 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- 2. INISIALISASI INDEXEDDB ---
-  function initIndexedDB() {
-    const request = indexedDB.open('PWA_FieldDatabase', 1);
-
-    request.onerror = (event) => {
-      console.error('IndexedDB gagal dibuka:', event.target.error);
-    };
-
-    request.onsuccess = (event) => {
-      db = event.target.result;
-      console.log('IndexedDB berhasil terhubung.');
-      loadRecords();
-    };
-
-    request.onupgradeneeded = (event) => {
-      const database = event.target.result;
-      if (!database.objectStoreNames.contains('records')) {
-        database.createObjectStore('records', { keyPath: 'id', autoIncrement: true });
-        console.log('Object store "records" berhasil dibuat.');
-      }
-    };
-  }
-
-  initIndexedDB();
-
-  // --- 3. FITUR A2HS (ADD TO HOME SCREEN) ---
+  // --- 2. FITUR A2HS (ADD TO HOME SCREEN) ---
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
@@ -74,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- INISIALISASI PETA LEAFLET (DENGAN FITUR KLIK MANUAL) ---
+  // --- 3. INISIALISASI PETA LEAFLET (DENGAN KLIK MANUAL) ---
   function initMap(lat = defaultLat, lng = defaultLng) {
     if (!map) {
       map = L.map('map').setView([lat, lng], 13);
@@ -83,15 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      // FITUR BARU: Klik pada peta untuk memilih lokasi manual
+      // Klik pada peta untuk memilih lokasi manual
       map.on('click', (e) => {
         const clickedLat = e.latlng.lat;
         const clickedLng = e.latlng.lng;
 
-        // Simpan koordinat yang diklik ke variabel currentCoords
         currentCoords = { lat: clickedLat, lng: clickedLng };
 
-        // Perbarui posisi marker
         if (marker) {
           marker.setLatLng([clickedLat, clickedLng]);
         } else {
@@ -100,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         marker.bindPopup("<b>Lokasi Laporan Dipilih Manual</b>").openPopup();
         geoStatus.textContent = `Lokasi Manual: ${clickedLat.toFixed(4)}, ${clickedLng.toFixed(4)}`;
-        console.log('Koordinat manual dipilih:', currentCoords);
       });
 
     } else {
@@ -116,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initMap();
 
-  // --- 5. GEOLOKASI ---
+  // --- 4. GEOLOKASI ---
   geoBtn.addEventListener('click', () => {
     if (!navigator.geolocation) {
       geoStatus.textContent = 'Geolokasi tidak didukung.';
@@ -141,24 +130,22 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  // --- 6. MANAJEMEN DATA INDEXEDDB & RENDERING ---
+  // --- 5. REAL-TIME CLOUD FIRESTORE & RENDERING ---
   function loadRecords() {
-    if (!db) return;
-
     notesList.innerHTML = '';
-    const transaction = db.transaction(['records'], 'readonly');
-    const store = transaction.objectStore('records');
-    const request = store.getAll();
+    const q = query(collection(db, "reports"), orderBy("date", "desc"));
 
-    request.onsuccess = () => {
-      const records = request.result;
+    // onSnapshot untuk sinkronisasi data real-time antar perangkat
+    onSnapshot(q, (querySnapshot) => {
+      notesList.innerHTML = '';
 
-      if (records.length === 0) {
-        notesList.innerHTML = '<p style="text-align: center; color: #64748b; margin-top: 15px;">Belum ada keluhan atau informasi tersimpan.</p>';
+      if (querySnapshot.empty) {
+        notesList.innerHTML = '<p style="text-align: center; color: #64748b; margin-top: 15px;">Belum ada keluhan atau informasi tersimpan di Cloud.</p>';
         return;
       }
 
-      records.reverse().forEach((record) => {
+      querySnapshot.forEach((docSnap) => {
+        const record = { id: docSnap.id, ...docSnap.data() };
         const noteItem = document.createElement('div');
         noteItem.className = 'note-item';
 
@@ -195,25 +182,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (record.coords) {
           const metaSpan = document.createElement('small');
-          metaSpan.className = 'note-meta clickable-coord'; // Tambahkan kelas CSS agar bisa disorot
+          metaSpan.className = 'note-meta clickable-coord';
           metaSpan.textContent = `📍 Koordinat: ${record.coords.lat.toFixed(4)}, ${record.coords.lng.toFixed(4)}`;
           
-          // Tambahkan event klik untuk mengarahkan peta ke koordinat laporan ini
+          // Fitur klik koordinat untuk mengarahkan peta ke titik laporan
           metaSpan.addEventListener('click', () => {
             if (map) {
-              // Geser dan zum peta ke titik koordinat laporan
               map.setView([record.coords.lat, record.coords.lng], 16);
-
-              // Perbarui posisi marker utama ke titik tersebut
               if (marker) {
                 marker.setLatLng([record.coords.lat, record.coords.lng]);
               } else {
                 marker = L.marker([record.coords.lat, record.coords.lng]).addTo(map);
               }
-
               marker.bindPopup(`<b>Lokasi Laporan:</b><br>${record.note}`).openPopup();
-
-              // Gulirkan layar ke atas agar peta langsung terlihat oleh pengguna
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }
           });
@@ -230,21 +211,22 @@ document.addEventListener('DOMContentLoaded', () => {
         noteItem.appendChild(deleteBtn);
         notesList.appendChild(noteItem);
       });
-    };
+    });
   }
 
-  function saveRecord() {
+  loadRecords();
+
+  // --- 6. MENYIMPAN DATA KE CLOUD FIRESTORE ---
+  async function saveRecord() {
     const name = nameInput.value.trim();
     const phone = phoneInput.value.trim();
     const note = noteInput.value.trim();
 
-    // Buat daftar untuk menampung kolom yang belum terisi
     let missingFields = [];
     if (name === '') missingFields.push('Nama Pengirim');
     if (phone === '') missingFields.push('Nomor Telepon');
     if (note === '') missingFields.push('Isi Informasi/Keluhan');
 
-    // Jika ada kolom yang kosong, tampilkan peringatan secara dinamis
     if (missingFields.length > 0) {
       alert(`Mohon isi bagian yang belum lengkap: ${missingFields.join(', ')}.`);
       return;
@@ -258,38 +240,31 @@ document.addEventListener('DOMContentLoaded', () => {
       date: new Date().toISOString()
     };
 
-    const transaction = db.transaction(['records'], 'readwrite');
-    const store = transaction.objectStore('records');
-    const request = store.add(newRecord);
-
-    request.onsuccess = () => {
-      console.log('Informasi berhasil dipublikasikan ke IndexedDB');
+    try {
+      await addDoc(collection(db, "reports"), newRecord);
+      console.log('Informasi berhasil dipublikasikan ke Firebase Cloud');
+      
       nameInput.value = '';
       phoneInput.value = '';
       noteInput.value = '';
       currentCoords = null;
       geoStatus.textContent = 'Belum ada lokasi dipilih';
-      loadRecords();
-    };
-
-    request.onerror = (event) => {
-      console.error('Gagal menyimpan informasi:', event.target.error);
-    };
+    } catch (error) {
+      console.error('Gagal menyimpan ke Firebase:', error);
+      alert('Gagal mengirim laporan. Periksa koneksi internet Anda.');
+    }
   }
 
-  function deleteRecord(id) {
-    const transaction = db.transaction(['records'], 'readwrite');
-    const store = transaction.objectStore('records');
-    const request = store.delete(id);
-
-    request.onsuccess = () => {
-      console.log(`Data dengan ID ${id} berhasil dihapus`);
-      loadRecords();
-    };
-
-    request.onerror = (event) => {
-      console.error('Gagal menghapus data:', event.target.error);
-    };
+  // --- 7. MENGHAPUS DATA DARI CLOUD FIRESTORE ---
+  async function deleteRecord(id) {
+    if (confirm('Yakin ingin menghapus informasi ini?')) {
+      try {
+        await deleteDoc(doc(db, "reports", id));
+        console.log(`Data dengan ID ${id} berhasil dihapus dari Cloud`);
+      } catch (error) {
+        console.error('Gagal menghapus data:', error);
+      }
+    }
   }
 
   if (saveBtn) {

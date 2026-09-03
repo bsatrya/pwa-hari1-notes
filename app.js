@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- 4. INISIALISASI PETA LEAFLET ---
+  // --- INISIALISASI PETA LEAFLET (DENGAN FITUR KLIK MANUAL) ---
   function initMap(lat = defaultLat, lng = defaultLng) {
     if (!map) {
       map = L.map('map').setView([lat, lng], 13);
@@ -82,6 +82,27 @@ document.addEventListener('DOMContentLoaded', () => {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
+
+      // FITUR BARU: Klik pada peta untuk memilih lokasi manual
+      map.on('click', (e) => {
+        const clickedLat = e.latlng.lat;
+        const clickedLng = e.latlng.lng;
+
+        // Simpan koordinat yang diklik ke variabel currentCoords
+        currentCoords = { lat: clickedLat, lng: clickedLng };
+
+        // Perbarui posisi marker
+        if (marker) {
+          marker.setLatLng([clickedLat, clickedLng]);
+        } else {
+          marker = L.marker([clickedLat, clickedLng]).addTo(map);
+        }
+
+        marker.bindPopup("<b>Lokasi Laporan Dipilih Manual</b>").openPopup();
+        geoStatus.textContent = `Lokasi Manual: ${clickedLat.toFixed(4)}, ${clickedLng.toFixed(4)}`;
+        console.log('Koordinat manual dipilih:', currentCoords);
+      });
+
     } else {
       map.setView([lat, lng], 15);
     }

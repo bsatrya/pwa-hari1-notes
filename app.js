@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('Aplikasi PWA Hari 4 Berhasil Dimuat (IndexedDB + A2HS)');
+  console.log('Aplikasi Forum Keluhan & Info Warga PWA Berhasil Dimuat');
 
   const nameInput = document.getElementById('nameInput');
   const phoneInput = document.getElementById('phoneInput');
@@ -16,10 +16,20 @@ document.addEventListener('DOMContentLoaded', () => {
   let db = null;
   let deferredPrompt = null;
 
+  // Koordinat default (pusat kota Malang)
   const defaultLat = -7.9666;
   const defaultLng = 112.6326;
 
-  // --- 1. INISIALISASI INDEXEDDB ---
+  // --- 1. REGISTRASI SERVICE WORKER ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then((reg) => console.log('SW terdaftar:', reg.scope))
+        .catch((err) => console.error('SW gagal:', err));
+    });
+  }
+
+  // --- 2. INISIALISASI INDEXEDDB ---
   function initIndexedDB() {
     const request = indexedDB.open('PWA_FieldDatabase', 1);
 
@@ -30,12 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onsuccess = (event) => {
       db = event.target.result;
       console.log('IndexedDB berhasil terhubung.');
-      loadRecords(); // Muat data setelah DB siap
+      loadRecords();
     };
 
     request.onupgradeneeded = (event) => {
       const database = event.target.result;
-      // Buat object store (tabel) jika belum ada dengan keyPath autoIncrement
       if (!database.objectStoreNames.contains('records')) {
         database.createObjectStore('records', { keyPath: 'id', autoIncrement: true });
         console.log('Object store "records" berhasil dibuat.');
@@ -45,12 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initIndexedDB();
 
-  // --- 2. FITUR A2HS (ADD TO HOME SCREEN) ---
+  // --- 3. FITUR A2HS (ADD TO HOME SCREEN) ---
   window.addEventListener('beforeinstallprompt', (e) => {
-    // Cegah browser menampilkan banner default
     e.preventDefault();
     deferredPrompt = e;
-    // Tampilkan tombol install kustom kita
     installBtn.style.display = 'block';
 
     installBtn.addEventListener('click', () => {
@@ -67,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- 3. INISIALISASI PETA LEAFLET ---
+  // --- 4. INISIALISASI PETA LEAFLET ---
   function initMap(lat = defaultLat, lng = defaultLng) {
     if (!map) {
       map = L.map('map').setView([lat, lng], 13);
@@ -88,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initMap();
 
-  // --- 4. GEOLOKASI ---
+  // --- 5. GEOLOKASI ---
   geoBtn.addEventListener('click', () => {
     if (!navigator.geolocation) {
       geoStatus.textContent = 'Geolokasi tidak didukung.';
@@ -103,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentCoords = { lat, lng };
         geoStatus.textContent = `Lokasi: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
         initMap(lat, lng);
-        marker.bindPopup("<b>Lokasi Tugas Lapangan</b>").openPopup();
+        marker.bindPopup("<b>Lokasi Keluhan / Kegiatan</b>").openPopup();
       },
       (error) => {
         geoStatus.textContent = 'Gagal mendeteksi posisi.';
@@ -113,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  // --- 5. MANAJEMEN DATA INDEXEDDB (CRUD) ---
+  // --- 6. MANAJEMEN DATA INDEXEDDB & RENDERING ---
   function loadRecords() {
     if (!db) return;
 
@@ -126,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const records = request.result;
 
       if (records.length === 0) {
-        notesList.innerHTML = '<p style="text-align: center; color: #64748b; margin-top: 15px;">Belum ada data tersimpan di IndexedDB.</p>';
+        notesList.innerHTML = '<p style="text-align: center; color: #64748b; margin-top: 15px;">Belum ada keluhan atau informasi tersimpan.</p>';
         return;
       }
 
@@ -136,6 +143,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const contentDiv = document.createElement('div');
         
+        // Format Waktu Kirim (Timestamp)
+        if (record.date) {
+          const dateObj = new Date(record.date);
+          const formattedDate = dateObj.toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          const timeSpan = document.createElement('small');
+          timeSpan.className = 'time-meta';
+          timeSpan.style.color = '#64748b';
+          timeSpan.style.display = 'block';
+          timeSpan.style.marginBottom = '4px';
+          timeSpan.textContent = `🕒 Dikirim pada: ${formattedDate}`;
+          contentDiv.appendChild(timeSpan);
+        }
+
         const contactSpan = document.createElement('span');
         contactSpan.className = 'contact-meta';
         contactSpan.textContent = `👤 ${record.name} (${record.phone})`;
@@ -170,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const note = noteInput.value.trim();
 
     if (name === '' || phone === '' || note === '') {
-      alert('Nama, Nomor Telepon, dan Catatan wajib diisi!');
+      alert('Nama, Nomor Telepon, dan Isi Informasi/Keluhan wajib diisi!');
       return;
     }
 
@@ -179,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
       phone: phone,
       note: note,
       coords: currentCoords || { lat: defaultLat, lng: defaultLng },
-      date: new Date().toISOString()
+      date: new Date().toISOString() // Menyimpan stempel waktu standar ISO
     };
 
     const transaction = db.transaction(['records'], 'readwrite');
@@ -187,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const request = store.add(newRecord);
 
     request.onsuccess = () => {
-      console.log('Data berhasil disimpan ke IndexedDB');
+      console.log('Informasi berhasil dipublikasikan ke IndexedDB');
       nameInput.value = '';
       phoneInput.value = '';
       noteInput.value = '';
@@ -197,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     request.onerror = (event) => {
-      console.error('Gagal menyimpan data:', event.target.error);
+      console.error('Gagal menyimpan informasi:', event.target.error);
     };
   }
 

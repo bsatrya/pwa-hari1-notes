@@ -195,8 +195,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (record.coords) {
           const metaSpan = document.createElement('small');
-          metaSpan.className = 'note-meta';
+          metaSpan.className = 'note-meta clickable-coord'; // Tambahkan kelas CSS agar bisa disorot
           metaSpan.textContent = `📍 Koordinat: ${record.coords.lat.toFixed(4)}, ${record.coords.lng.toFixed(4)}`;
+          
+          // Tambahkan event klik untuk mengarahkan peta ke koordinat laporan ini
+          metaSpan.addEventListener('click', () => {
+            if (map) {
+              // Geser dan zum peta ke titik koordinat laporan
+              map.setView([record.coords.lat, record.coords.lng], 16);
+
+              // Perbarui posisi marker utama ke titik tersebut
+              if (marker) {
+                marker.setLatLng([record.coords.lat, record.coords.lng]);
+              } else {
+                marker = L.marker([record.coords.lat, record.coords.lng]).addTo(map);
+              }
+
+              marker.bindPopup(`<b>Lokasi Laporan:</b><br>${record.note}`).openPopup();
+
+              // Gulirkan layar ke atas agar peta langsung terlihat oleh pengguna
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          });
+
           contentDiv.appendChild(metaSpan);
         }
 

@@ -195,3 +195,15 @@ button {
 button:hover {
   background-color: #1e40af;
 }
+
+/* Tambahkan ke bagian bawah style.css Anda */
+.clickable-coord {
+  color: #0284c7;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.clickable-coord:hover {
+  color: #0369a1;
+}

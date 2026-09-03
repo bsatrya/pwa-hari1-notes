@@ -196,8 +196,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const phone = phoneInput.value.trim();
     const note = noteInput.value.trim();
 
-    if (name === '' || phone === '' || note === '') {
-      alert('Nama, Nomor Telepon, dan Isi Informasi/Keluhan wajib diisi!');
+    // Buat daftar untuk menampung kolom yang belum terisi
+    let missingFields = [];
+    if (name === '') missingFields.push('Nama Pengirim');
+    if (phone === '') missingFields.push('Nomor Telepon');
+    if (note === '') missingFields.push('Isi Informasi/Keluhan');
+
+    // Jika ada kolom yang kosong, tampilkan peringatan secara dinamis
+    if (missingFields.length > 0) {
+      alert(`Mohon isi bagian yang belum lengkap: ${missingFields.join(', ')}.`);
       return;
     }
 
@@ -206,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
       phone: phone,
       note: note,
       coords: currentCoords || { lat: defaultLat, lng: defaultLng },
-      date: new Date().toISOString() // Menyimpan stempel waktu standar ISO
+      date: new Date().toISOString()
     };
 
     const transaction = db.transaction(['records'], 'readwrite');

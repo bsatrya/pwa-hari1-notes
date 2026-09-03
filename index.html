@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catatan & Kontak PWA - Hari 4</title>
+  <title>Dashboard Lapangan & Info Warga - PWA Hari 5</title>
   
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#1e3a8a">
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -15,16 +15,16 @@
 <body>
 
   <div class="container">
-    <h1>📇 Buku Kontak & Peta Lapangan</h1>
+    <h1>🚀 Dashboard Info Warga & Lapangan</h1>
+    <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 15px;">Sistem PWA Offline-First dengan GPS & IndexedDB</p>
     
-    <!-- Tombol Install A2HS (Hidden secara default, muncul jika browser mendukung) -->
-    <button id="installBtn" class="install-btn" style="display: none;">📲 Install Aplikasi ke Perangkat</button>
+    <!-- Tombol Install A2HS -->
+    <button id="installBtn" class="install-btn" style="display: none;">📲 Install Dashboard ke Perangkat</button>
 
     <div class="form-group">
-      <!-- Input Data Terstruktur untuk IndexedDB -->
-      <input type="text" id="nameInput" placeholder="Nama Petugas / Kontak..." class="input-field">
+      <input type="text" id="nameInput" placeholder="Nama Pengirim / Petugas..." class="input-field">
       <input type="tel" id="phoneInput" placeholder="Nomor Telepon / WhatsApp..." class="input-field">
-      <textarea id="noteInput" placeholder="Catatan atau laporan tugas lapangan..."></textarea>
+      <textarea id="noteInput" placeholder="Tulis informasi kegiatan warga atau laporan lapangan..."></textarea>
       
       <div class="location-box">
         <button type="button" id="geoBtn" class="geo-btn">Ambil Posisi GPS</button>
@@ -33,10 +33,10 @@
 
       <div id="map" class="map-container"></div>
 
-      <button id="saveBtn" type="button" style="margin-top: 15px;">Simpan ke IndexedDB</button>
+      <button id="saveBtn" type="button" style="margin-top: 15px; background-color: #1e3a8a;">Publikasikan Informasi</button>
     </div>
 
-    <!-- Area daftar data terstruktur -->
+    <!-- Area daftar data -->
     <div class="notes-list" id="notesList"></div>
   </div>
 

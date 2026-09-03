@@ -187,3 +187,11 @@ button:hover {
   margin-bottom: 2px;
   display: block;
 }
+
+/* Tambahkan atau sesuaikan di style.css */
+button {
+  background-color: #1e3a8a;
+}
+button:hover {
+  background-color: #1e40af;
+}

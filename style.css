@@ -145,3 +145,45 @@ button:hover {
   border: 1px solid #cbd5e1;
   z-index: 1;
 }
+
+/* Tambahkan ke bagian bawah style.css Anda */
+.input-field {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.install-btn {
+  background-color: #7c3aed;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 20px;
+  transition: background-color 0.2s;
+}
+
+.install-btn:hover {
+  background-color: #6d28d9;
+}
+
+.contact-meta {
+  font-size: 0.85rem;
+  color: #1e293b;
+  font-weight: 500;
+  margin-bottom: 2px;
+  display: block;
+}

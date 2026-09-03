@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catatan Pintar PWA - Hari 1</title>
+  <title>Catatan Pintar PWA - Hari 2</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <link rel="stylesheet" href="style.css">
@@ -11,10 +11,17 @@
 <body>
 
   <div class="container">
-    <h1>📝 Catatan Pintar Harian</h1>
+    <h1>📍 Catatan Pintar + Geolokasi</h1>
     
     <div class="form-group">
-      <textarea id="noteInput" placeholder="Tulis catatan baru di sini..."></textarea>
+      <textarea id="noteInput" placeholder="Tulis catatan harian di sini..."></textarea>
+      
+      <!-- Bagian Informasi & Tombol Geolokasi -->
+      <div class="location-box">
+        <button type="button" id="geoBtn" class="geo-btn">Ambil Lokasi Saat Ini</button>
+        <span id="geoStatus" class="geo-status">Belum ada lokasi dipilih</span>
+      </div>
+
       <button id="saveBtn" type="button">Simpan Catatan</button>
     </div>
 

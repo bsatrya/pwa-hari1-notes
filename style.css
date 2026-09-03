@@ -102,3 +102,36 @@ button:hover {
 .delete-btn:hover {
   background-color: #dc2626;
 }
+
+/* Kode sebelumnya tetap dipertahankan, tambahkan styling berikut: */
+.location-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.geo-btn {
+  background-color: #059669;
+  width: auto;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+}
+
+.geo-btn:hover {
+  background-color: #047857;
+}
+
+.geo-status {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.note-meta {
+  font-size: 0.8rem;
+  color: #059669;
+  margin-top: 4px;
+  display: block;
+}

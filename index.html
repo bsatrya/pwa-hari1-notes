@@ -23,19 +23,19 @@
 
     <!-- Form Input Laporan -->
     <div class="form-group">
-      <input type="text" id="nameInput" placeholder="Nama Petugas / Kontak..." required>
+      <input type="text" id="nameInput" placeholder="Nama Pengirim..." required>
     </div>
 
     <div class="form-group">
       <input type="email" id="emailInput" placeholder="Alamat Email..." required>
     </div>
-
+    
     <div class="form-group">
-      <input type="text" id="locationNameInput" placeholder="Keterangan Lokasi (Cth: Jl. Joyo Tambaksari No. 10)">
+      <tetarea id="noteInput" placeholder="Catatan atau laporan tugas lapangan..." rows="5" required></textarea>
     </div>
 
     <div class="form-group">
-      <textarea id="noteInput" placeholder="Catatan atau laporan tugas lapangan..." rows="5" required></textarea>
+      <input type="text" id="locationNameInput" placeholder="Keterangan Lokasi (Cth: Jl. Joyo Tambaksari No. 10)">
     </div>
 
     <!-- Tombol & Status GPS -->
@@ -48,7 +48,7 @@
     <div id="map" class="map-container" style="height: 280px; border-radius: 8px; margin-bottom: 20px;"></div>
 
     <button id="saveBtn" type="button" style="margin-bottom: 20px; background-color: #1e3a8a; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">Publikasikan Informasi</button>
-
+x
     <!-- Area daftar data -->
     <div class="notes-list" id="notesList"></div>
   </div>

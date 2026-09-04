@@ -20,19 +20,21 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Aplikasi Forum Keluhan & Info Warga PWA (Firebase Cloud) Berhasil Dimuat');
 
   const nameInput = document.getElementById('nameInput');
-  const emailInput = document.getElementById('emailInput'); // Diubah dari phoneInput
-  const locationNameInput = document.getElementById('locationNameInput'); // Kolom baru nama lokasi
+  const emailInput = document.getElementById('emailInput');
+  const locationNameInput = document.getElementById('locationNameInput');
   const noteInput = document.getElementById('noteInput');
   const saveBtn = document.getElementById('saveBtn');
   const geoBtn = document.getElementById('geoBtn');
   const geoStatus = document.getElementById('geoStatus');
   const notesList = document.getElementById('notesList');
   const installBtn = document.getElementById('installBtn');
+  const suggestionsList = document.getElementById('suggestionsList'); // Elemen penampung list saran lokasi
 
   let currentCoords = null;
   let map = null;
   let marker = null;
   let deferredPrompt = null;
+  let searchTimeout = null;
 
   // Koordinat default (pusat kota Malang)
   const defaultLat = -7.9666;
@@ -131,7 +133,67 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  // --- 5. REAL-TIME CLOUD FIRESTORE & RENDERING ---
+  // --- 5. PENCARIAN OTOMATIS LOKASI (AUTOCOMPLETE NOMINATIM) ---
+  if (locationNameInput && suggestionsList) {
+    locationNameInput.addEventListener('input', (e) => {
+      const keyword = e.target.value.trim();
+      clearTimeout(searchTimeout);
+
+      if (keyword.length < 3) {
+        suggestionsList.innerHTML = '';
+        return;
+      }
+
+      searchTimeout = setTimeout(() => {
+        const searchUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(keyword)}&countrycodes=id&limit=5`;
+
+        fetch(searchUrl)
+          .then(response => response.json())
+          .then(data => {
+            suggestionsList.innerHTML = '';
+            if (data.length === 0) return;
+
+            data.forEach(place => {
+              const item = document.createElement('div');
+              item.className = 'autocomplete-suggestion';
+              item.textContent = place.display_name;
+
+              item.addEventListener('click', () => {
+                locationNameInput.value = place.display_name;
+                suggestionsList.innerHTML = '';
+
+                const lat = parseFloat(place.lat);
+                const lon = parseFloat(place.lon);
+
+                currentCoords = { lat: lat, lng: lon };
+                geoStatus.textContent = `Lokasi Dipilih: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+
+                if (map) {
+                  map.setView([lat, lon], 16);
+                  if (marker) {
+                    marker.setLatLng([lat, lon]);
+                  } else {
+                    marker = L.marker([lat, lon]).addTo(map);
+                  }
+                  marker.bindPopup(`<b>${place.display_name}</b>`).openPopup();
+                }
+              });
+
+              suggestionsList.appendChild(item);
+            });
+          })
+          .catch(err => console.error('Gagal mengambil data lokasi:', err));
+      }, 400);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!locationNameInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+        suggestionsList.innerHTML = '';
+      }
+    });
+  }
+
+  // --- 6. REAL-TIME CLOUD FIRESTORE & RENDERING ---
   function loadRecords() {
     notesList.innerHTML = '';
     const q = query(collection(db, "reports"), orderBy("date", "desc"));
@@ -151,7 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const contentDiv = document.createElement('div');
         
-        // Format Waktu Kirim (Timestamp)
         if (record.date) {
           const dateObj = new Date(record.date);
           const formattedDate = dateObj.toLocaleDateString('id-ID', {
@@ -171,13 +232,11 @@ document.addEventListener('DOMContentLoaded', () => {
           contentDiv.appendChild(timeSpan);
         }
 
-        // Tampilkan Nama & Email
         const contactSpan = document.createElement('span');
         contactSpan.className = 'contact-meta';
         contactSpan.textContent = `👤 ${record.name} (${record.email})`;
         contentDiv.appendChild(contactSpan);
 
-        // Tampilkan Keterangan Nama Lokasi Text (jika diisi)
         if (record.locationName) {
           const locNameSpan = document.createElement('span');
           locNameSpan.style.display = 'block';
@@ -226,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadRecords();
 
-  // --- 6. MENYIMPAN DATA KE CLOUD FIRESTORE ---
+  // --- 7. MENYIMPAN DATA KE CLOUD FIRESTORE ---
   async function saveRecord() {
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
@@ -268,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- 7. MENGHAPUS DATA DARI CLOUD FIRESTORE ---
+  // --- 8. MENGHAPUS DATA DARI CLOUD FIRESTORE ---
   async function deleteRecord(id) {
     if (confirm('Yakin ingin menghapus informasi ini?')) {
       try {

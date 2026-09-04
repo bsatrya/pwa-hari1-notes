@@ -35,9 +35,11 @@
     </div>
 
     <div class="form-group">
-      <input type="text" id="locationNameInput" placeholder="Keterangan Lokasi (Cth: Jl. Joyo Tambaksari No. 10)">
+      <input type="text" id="locationNameInput" placeholder="Keterangan Lokasi (Cth: Jl. Joyo Tambaksari No. 10)" autocomplete="off">
+      <!-- Elemen penampung list hasil pencarian otomatis -->
+      <div id="suggestionsList" class="autocomplete-suggestions"></div>
     </div>
-
+   
     <!-- Tombol & Status GPS -->
     <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
       <button id="geoBtn" type="button" style="background-color: #0d9488; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 500;">Ambil Posisi GPS</button>

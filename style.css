@@ -80,3 +80,32 @@ body {
   display: block;
   margin-top: 5px;
 }
+
+/* Container dropdown hasil pencarian lokasi */
+.autocomplete-suggestions {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  position: absolute;
+  z-index: 1000;
+  max-height: 150px;
+  overflow-y: auto;
+  width: calc(100% - 24px);
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.autocomplete-suggestion {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.autocomplete-suggestion:hover {
+  background-color: #f8fafc;
+  color: #0d9488;
+}
+
+.form-group {
+  position: relative; /* Penting agar posisi dropdown menempel rapi pada input lokasi */
+}

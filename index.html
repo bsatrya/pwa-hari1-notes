@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Lapangan & Info Warga - PWA</title>
+  <title>Dashboard Info Warga & Lapangan</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1e3a8a">
@@ -15,15 +15,15 @@
 <body>
 
   <div class="container">
-    <h1>🚀 Latihan Dashboard Info Warga</h1>
-    <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 15px;">Sistem PWA Cloud-Synchronized dengan GPS & Firebase</p>
+    <h2 style="text-align: center; margin-bottom: 5px; color: #1e293b;">📖 Buku Kontak & Peta Lapangan</h2>
+    <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">Sistem PWA Cloud-Synchronized dengan GPS & Firebase</p>
     
     <!-- Tombol Install A2HS -->
     <button id="installBtn" class="install-btn" style="display: none;">📲 Install Dashboard ke Perangkat</button>
 
-    <!-- Form Input Laporan (Dipindah ke Atas) -->
+    <!-- Form Input Laporan -->
     <div class="form-group">
-      <input type="text" id="nameInput" placeholder="Nama Pengirim..." required>
+      <input type="text" id="nameInput" placeholder="Nama Petugas / Kontak..." required>
     </div>
 
     <div class="form-group">
@@ -35,19 +35,19 @@
     </div>
 
     <div class="form-group">
-      <textarea id="noteInput" placeholder="Tuliskan keluhan atau informasi warga..." rows="3" required></textarea>
+      <textarea id="noteInput" placeholder="Catatan atau laporan tugas lapangan..." rows="5" required></textarea>
     </div>
 
-    <!-- Tombol & Status GPS (Dipindah ke Bawah Form) -->
-    <div style="margin-top: 15px; margin-bottom: 10px;">
-      <button id="geoBtn" type="button" style="background-color: #0284c7; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 500;">Ambil Posisi GPS</button>
-      <span id="geoStatus" style="font-size: 0.85rem; color: #64748b; margin-left: 10px;">Belum ada lokasi dipilih</span>
+    <!-- Tombol & Status GPS -->
+    <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+      <button id="geoBtn" type="button" style="background-color: #0d9488; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 500;">Ambil Posisi GPS</button>
+      <span id="geoStatus" style="font-size: 0.85rem; color: #64748b;">Belum ada lokasi dipilih</span>
     </div>
 
-    <!-- Peta Interaktif Leaflet (Dipindah ke Bawah) -->
-    <div id="map" class="map-container" style="height: 250px; border-radius: 8px; margin-bottom: 15px;"></div>
+    <!-- Peta Interaktif Leaflet -->
+    <div id="map" class="map-container" style="height: 280px; border-radius: 8px; margin-bottom: 20px;"></div>
 
-    <button id="saveBtn" type="button" style="margin-bottom: 15px; background-color: #1e3a8a; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer;">Publikasikan Informasi</button>
+    <button id="saveBtn" type="button" style="margin-bottom: 20px; background-color: #1e3a8a; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem;">Publikasikan Informasi</button>
 
     <!-- Area daftar data -->
     <div class="notes-list" id="notesList"></div>
